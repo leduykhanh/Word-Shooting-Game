@@ -21,6 +21,7 @@
 /**
  * Initialize the Game and start it.
  */
+
 var game = new Game();
 
 function init() {
@@ -96,6 +97,7 @@ function Drawable() {
 	this.collidableWith = "";
 	this.isColliding = false;
 	this.type = "";
+	this.letter = getARandomLetter();
 
 	// Define abstract function to be implemented in child objects
 	this.draw = function() {
@@ -534,7 +536,11 @@ function Ship() {
 	}
 
 	this.draw = function() {
-		this.context.drawImage(imageRepository.spaceship, this.x, this.y);
+		
+		//this.context.drawImage(imageRepository.spaceship, this.x, this.y);
+		this.context.font = "30px Comic Sans MS";
+		this.context.fillStyle = "white";
+		this.context.fillText(this.letter,this.x+15,this.y+30);
 	};
 	this.move = function() {
 		counter++;
@@ -544,6 +550,7 @@ function Ship() {
 			// The ship moved, so erase it's current image so it can
 			// be redrawn in it's new location
 			this.context.clearRect(this.x, this.y, this.width, this.height);
+			this.context.clearRect(this.x, this.y, 50, 50);
 
 			// Update x and y according to the direction to move and
 			// redraw the ship. Change the else if's to if statements
@@ -624,6 +631,7 @@ function Enemy() {
 	 */
 	this.draw = function() {
 		this.context.clearRect(this.x-1, this.y, this.width+1, this.height);
+		this.context.clearRect(this.x-1, this.y, 50, 50);
 		this.x += this.speedX;
 		this.y += this.speedY;
 		if (this.x <= this.leftEdge) {
@@ -641,6 +649,9 @@ function Enemy() {
 
 		if (!this.isColliding) {
 			this.context.drawImage(imageRepository.enemy, this.x, this.y);
+			this.context.font = "30px Comic Sans MS";
+			this.context.fillStyle = "red";
+			this.context.fillText(this.letter,this.x+15,this.y+30);
 
 			// Enemy has a chance to shoot every movement
 			chance = Math.floor(Math.random()*101);
@@ -942,7 +953,10 @@ function detectCollision() {
 	}
 };
 
-
+function getARandomLetter(){
+	allLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	return allLetters.charAt(Math.floor(Math.random() * allLetters.length));
+}
 // The keycodes that will be mapped when a user presses a button.
 // Original code by Doug McInnes
 KEY_CODES = {
