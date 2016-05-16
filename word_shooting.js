@@ -1,23 +1,3 @@
-/***************
- * PART FIVE - Finishing touches
- ***************/
-
-/* NOTES TO REMEMBER
- * Could add
- * - hitboxes to all objects to make collision better
- * - levels
- * - bosses
- * - explosions / particles
- * - parallax background
- * - vectors for movement
- * - lirbraries! http://www.createjs.com/#!/CreateJS
- */
-
-/* RESOURCES
- * http://www.w3schools.com/html5/html5_ref_av_dom.asp
- * http://www.superflashbros.net/as3sfxr/
- */
-
 /**
  * Initialize the Game and start it.
  */
@@ -25,6 +5,7 @@
 var game = new Game();
 
 function init() {
+	console.log("called");
 	game.init();
 }
 
@@ -648,7 +629,7 @@ function Enemy() {
 		}
 
 		if (!this.isColliding) {
-			this.context.drawImage(imageRepository.enemy, this.x, this.y);
+			//this.context.drawImage(imageRepository.enemy, this.x, this.y);
 			this.context.font = "30px Comic Sans MS";
 			this.context.fillStyle = "red";
 			this.context.fillText(this.letter,this.x+15,this.y+30);
@@ -799,6 +780,9 @@ function Game() {
 
 	// Start the animation loop
 	this.start = function() {
+		document.getElementById('game-start').style.display = "none";
+		document.getElementById('score_board').style.display = "block";
+		document.getElementById('level_board').style.display = "block";
 		this.ship.draw();
 		this.backgroundAudio.play();
 		animate();
@@ -847,7 +831,8 @@ function checkReadyState() {
 	if (game.gameOverAudio.readyState === 4 && game.backgroundAudio.readyState === 4) {
 		window.clearInterval(game.checkAudio);
 		document.getElementById('loading').style.display = "none";
-		game.start();
+		// game.start();
+		document.getElementById('game-start').style.display = "block";
 	}
 }
 
