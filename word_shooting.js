@@ -11,14 +11,12 @@ function init() {
 
 
 /**
- * Define an object to hold all our images for the game so images
- * are only ever created once. This type of object is known as a
- * singleton.
+ * Define an object to hold all our images for the game
  */
 var imageRepository = new function() {
 	// Define images
 	this.background = new Image();
-	this.spaceship = new Image();
+	this.hero = new Image();
 	this.bullet = new Image();
 	this.enemy = new Image();
 	this.enemyBullet = new Image();
@@ -35,7 +33,7 @@ var imageRepository = new function() {
 	this.background.onload = function() {
 		imageLoaded();
 	}
-	this.spaceship.onload = function() {
+	this.hero.onload = function() {
 		imageLoaded();
 	}
 	this.bullet.onload = function() {
@@ -48,9 +46,9 @@ var imageRepository = new function() {
 		imageLoaded();
 	}
 
-	// Set images src
+	// Set images source
 	this.background.src = "imgs/bg.png";
-	this.spaceship.src = "imgs/ship.png";
+	this.hero.src = "imgs/hero.png";
 	this.bullet.src = "imgs/bullet.png";
 	this.enemy.src = "imgs/enemy.png";
 	this.enemyBullet.src = "imgs/bullet_enemy.png";
@@ -59,9 +57,7 @@ var imageRepository = new function() {
 
 /**
  * Creates the Drawable object which will be the base class for
- * all drawable objects in the game. Sets up defualt variables
- * that all child objects will inherit, as well as the defualt
- * functions.
+ * all drawable objects in the game.
  */
 function Drawable() {
 	this.init = function(x, y, width, height) {
@@ -91,11 +87,6 @@ function Drawable() {
 }
 
 
-/**
- * Creates the Background object which will become a child of
- * the Drawable object. The background is drawn on the "background"
- * canvas and creates the illusion of moving by panning the image.
- */
 function Background() {
 	this.speed = 1; // Redefine speed of the background for panning
 
@@ -119,7 +110,7 @@ Background.prototype = new Drawable();
 
 
 /**
- * Creates the Bullet object which the ship fires. The bullets are
+ * Creates the Bullet object which the Hero fires. The bullets are
  * drawn on the "main" canvas.
  */
 function Bullet(object) {
@@ -135,12 +126,7 @@ function Bullet(object) {
 		this.alive = true;
 	};
 
-	/*
-	 * Uses a "drity rectangle" to erase the bullet and moves it.
-	 * Returns true if the bullet moved of the screen, indicating that
-	 * the bullet is ready to be cleared by the pool, otherwise draws
-	 * the bullet.
-	 */
+
 	this.draw = function() {
 		this.context.clearRect(this.x-1, this.y-1, this.width+2, this.height+2);
 		this.y -= this.speed;
@@ -166,9 +152,7 @@ function Bullet(object) {
 		}
 	};
 
-	/*
-	 * Resets the bullet values
-	 */
+
 	this.clear = function() {
 		this.x = 0;
 		this.y = 0;
@@ -180,16 +164,7 @@ function Bullet(object) {
 Bullet.prototype = new Drawable();
 
 
-/**
- * QuadTree object.
- *
- * The quadrant indexes are numbered as below:
- *     |
- *  1  |  0
- * ----+----
- *  2  |  3
- *     |
- */
+/* QuadTree object.*/
 function QuadTree(boundBox, lvl) {
 	var maxObjects = 10;
 	this.bounds = boundBox || {
@@ -253,9 +228,7 @@ function QuadTree(boundBox, lvl) {
 	};
 
 	/*
-	 * Insert the object into the quadTree. If the tree
-	 * excedes the capacity, it will split and add all
-	 * objects to their corresponding nodes.
+	 Insert the object into the quadTree.
 	 */
 	this.insert = function(obj) {
 		if (typeof obj === "undefined") {
@@ -272,8 +245,7 @@ function QuadTree(boundBox, lvl) {
 
 		if (this.nodes.length) {
 			var index = this.getIndex(obj);
-			// Only add the object to a subnode if it can fit completely
-			// within one
+
 			if (index != -1) {
 				this.nodes[index].insert(obj);
 
@@ -283,7 +255,7 @@ function QuadTree(boundBox, lvl) {
 
 		objects.push(obj);
 
-		// Prevent infinite splitting
+
 		if (objects.length > maxObjects && level < maxLevels) {
 			if (this.nodes[0] == null) {
 				this.split();
@@ -303,11 +275,7 @@ function QuadTree(boundBox, lvl) {
 		}
 	};
 
-	/*
-	 * Determine which node the object belongs to. -1 means
-	 * object cannot completely fit within a node and is part
-	 * of the current node
-	 */
+
 	this.getIndex = function(obj) {
 
 		var index = -1;
@@ -346,7 +314,7 @@ function QuadTree(boundBox, lvl) {
 	 * Splits the node into 4 subnodes
 	 */
 	this.split = function() {
-		// Bitwise or [html5rocks]
+
 		var subWidth = (this.bounds.width / 2) | 0;
 		var subHeight = (this.bounds.height / 2) | 0;
 
@@ -378,27 +346,8 @@ function QuadTree(boundBox, lvl) {
 }
 
 
-/**
- * Custom Pool object. Holds Bullet objects to be managed to prevent
- * garbage collection.
- * The pool works as follows:
- * - When the pool is initialized, it popoulates an array with
- *   Bullet objects.
- * - When the pool needs to create a new object for use, it looks at
- *   the last item in the array and checks to see if it is currently
- *   in use or not. If it is in use, the pool is full. If it is
- *   not in use, the pool "spawns" the last item in the array and
- *   then pops it from the end and pushed it back onto the front of
- *   the array. This makes the pool have free objects on the back
- *   and used objects in the front.
- * - When the pool animates its objects, it checks to see if the
- *   object is in use (no need to draw unused objects) and if it is,
- *   draws it. If the draw() function returns true, the object is
- *   ready to be cleaned so it "clears" the object and uses the
- *   array function splice() to remove the item from the array and
- *   pushes it to the back.
- * Doing this makes creating/destroying objects in the pool
- * constant.
+/*
+ Custom Pool object. Holds Bullet objects to be managed
  */
 function Pool(maxSize) {
 	var size = maxSize; // Max bullets allowed in the pool
@@ -414,9 +363,7 @@ function Pool(maxSize) {
 		return obj;
 	}
 
-	/*
-	 * Populates the pool array with the given object
-	 */
+
 	this.init = function(object) {
 		if (object == "bullet") {
 			for (var i = 0; i < size; i++) {
@@ -442,17 +389,14 @@ function Pool(maxSize) {
 				var bullet = new Bullet("enemyBullet");
 				bullet.init(0,0, imageRepository.enemyBullet.width,
 										imageRepository.enemyBullet.height);
-				bullet.collidableWith = "ship";
+				bullet.collidableWith = "Hero";
 				bullet.type = "enemyBullet";
 				pool[i] = bullet;
 			}
 		}
 	};
 
-	/*
-	 * Grabs the last item in the list and initializes it and
-	 * pushes it to the front of the array.
-	 */
+
 	this.get = function(x, y, speed) {
 		if(!pool[size - 1].alive) {
 			pool[size - 1].spawn(x, y, speed);
@@ -460,11 +404,7 @@ function Pool(maxSize) {
 		}
 	};
 
-	/*
-	 * Used for the ship to be able to get two bullets at once. If
-	 * only the get() function is used twice, the ship is able to
-	 * fire and only have 1 bullet spawn instead of 2.
-	 */
+
 	this.getTwo = function(x1, y1, speed1, x2, y2, speed2) {
 		if(!pool[size - 1].alive && !pool[size - 2].alive) {
 			this.get(x1, y1, speed1);
@@ -473,8 +413,7 @@ function Pool(maxSize) {
 	};
 
 	/*
-	 * Draws any in use Bullets. If a bullet goes off the screen,
-	 * clears it and pushes it to the front of the array.
+	 * Draws any in use Bullets.
 	 */
 	this.animate = function() {
 		for (var i = 0; i < size; i++) {
@@ -493,17 +432,15 @@ function Pool(maxSize) {
 
 
 /**
- * Create the Ship object that the player controls. The ship is
- * drawn on the "ship" canvas and uses dirty rectangles to move
- * around the screen.
+  Create the Hero object that the player controls.
  */
-function Ship() {
+function Hero() {
 	this.speed = 3;
 	this.bulletPool = new Pool(30);
 	var fireRate = 15;
 	var counter = 0;
 	this.collidableWith = "enemyBullet";
-	this.type = "ship";
+	this.type = "Hero";
 
 	this.init = function(x, y, width, height) {
 		// Defualt variables
@@ -518,7 +455,7 @@ function Ship() {
 
 	this.draw = function() {
 		
-		//this.context.drawImage(imageRepository.spaceship, this.x, this.y);
+		this.context.drawImage(imageRepository.hero, this.x, this.y);
 		this.context.font = "30px Comic Sans MS";
 		this.context.fillStyle = "white";
 		this.context.fillText(this.letter,this.x+15,this.y+30);
@@ -528,14 +465,11 @@ function Ship() {
 		// Determine if the action is move action
 		if (KEY_STATUS.left || KEY_STATUS.right ||
 				KEY_STATUS.down || KEY_STATUS.up) {
-			// The ship moved, so erase it's current image so it can
-			// be redrawn in it's new location
+
 			this.context.clearRect(this.x, this.y, this.width, this.height);
 			this.context.clearRect(this.x, this.y, 50, 50);
 
-			// Update x and y according to the direction to move and
-			// redraw the ship. Change the else if's to if statements
-			// to have diagonal movement.
+
 			if (KEY_STATUS.left) {
 				this.x -= this.speed
 				if (this.x <= 0) // Kep player within the screen
@@ -555,13 +489,17 @@ function Ship() {
 			}
 		}
 
-		// Redraw the ship
+		// Redraw the Hero
 		if (!this.isColliding) {
 			this.draw();
 		}
 		else {
-			this.alive = false;
-			game.gameOver();
+			this.isColliding = false;
+			if (--game.lives==0 ){
+				this.alive = false;
+				game.gameOver();
+			}
+
 		}
 
 		if (KEY_STATUS.space && counter >= fireRate && !this.isColliding) {
@@ -579,11 +517,11 @@ function Ship() {
 		game.laser.get();
 	};
 }
-Ship.prototype = new Drawable();
+Hero.prototype = new Drawable();
 
 
 /**
- * Create the Enemy ship object.
+ * Create the Enemy object.
  */
 function Enemy() {
 	var percentFire = .01;
@@ -629,7 +567,7 @@ function Enemy() {
 		}
 
 		if (!this.isColliding) {
-			//this.context.drawImage(imageRepository.enemy, this.x, this.y);
+			this.context.drawImage(imageRepository.enemy, this.x, this.y);
 			this.context.font = "30px Comic Sans MS";
 			this.context.fillStyle = "red";
 			this.context.fillText(this.letter,this.x+15,this.y+30);
@@ -673,28 +611,21 @@ Enemy.prototype = new Drawable();
 
 
  /**
- * Creates the Game object which will hold all objects and data for
- * the game.
+Game object which will hold all objects and data for the game.
  */
 function Game() {
-	/*
-	 * Gets canvas information and context and sets up all game
-	 * objects.
-	 * Returns true if the canvas is supported and false if it
-	 * is not. This is to stop the animation script from constantly
-	 * running on browsers that do not support the canvas.
-	 */
+
 	this.init = function() {
 		// Get the canvas elements
 		this.bgCanvas = document.getElementById('background');
-		this.shipCanvas = document.getElementById('ship');
+		this.HeroCanvas = document.getElementById('Hero');
 		this.mainCanvas = document.getElementById('main');
 
 		// Test to see if canvas is supported. Only need to
 		// check one canvas
 		if (this.bgCanvas.getContext) {
 			this.bgContext = this.bgCanvas.getContext('2d');
-			this.shipContext = this.shipCanvas.getContext('2d');
+			this.HeroContext = this.HeroCanvas.getContext('2d');
 			this.mainContext = this.mainCanvas.getContext('2d');
 
 			// Initialize objects to contain their context and canvas
@@ -703,9 +634,9 @@ function Game() {
 			Background.prototype.canvasWidth = this.bgCanvas.width;
 			Background.prototype.canvasHeight = this.bgCanvas.height;
 
-			Ship.prototype.context = this.shipContext;
-			Ship.prototype.canvasWidth = this.shipCanvas.width;
-			Ship.prototype.canvasHeight = this.shipCanvas.height;
+			Hero.prototype.context = this.HeroContext;
+			Hero.prototype.canvasWidth = this.HeroCanvas.width;
+			Hero.prototype.canvasHeight = this.HeroCanvas.height;
 
 			Bullet.prototype.context = this.mainContext;
 			Bullet.prototype.canvasWidth = this.mainCanvas.width;
@@ -719,13 +650,13 @@ function Game() {
 			this.background = new Background();
 			this.background.init(0,0); // Set draw point to 0,0
 
-			// Initialize the ship object
-			this.ship = new Ship();
-			// Set the ship to start near the bottom middle of the canvas
-			this.shipStartX = this.shipCanvas.width/2 - imageRepository.spaceship.width;
-			this.shipStartY = this.shipCanvas.height/4*3 + imageRepository.spaceship.height*2;
-			this.ship.init(this.shipStartX, this.shipStartY,
-			               imageRepository.spaceship.width, imageRepository.spaceship.height);
+			// Initialize the Hero object
+			this.Hero = new Hero();
+			// Set the Hero to start near the bottom middle of the canvas
+			this.HeroStartX = this.HeroCanvas.width/2 - imageRepository.hero.width;
+			this.HeroStartY = this.HeroCanvas.height/4*3 + imageRepository.hero.height*2;
+			this.Hero.init(this.HeroStartX, this.HeroStartY,
+			               imageRepository.hero.width, imageRepository.hero.height);
 
 			// Initialize the enemy pool object
 			this.enemyPool = new Pool(30);
@@ -739,6 +670,8 @@ function Game() {
 			this.quadTree = new QuadTree({x:0,y:0,width:this.mainCanvas.width,height:this.mainCanvas.height});
 
 			this.playerScore = 0;
+			this.lives = 10;
+			this.level = "Easy"
 
 			// Audio files
 			this.laser = new SoundPool(10);
@@ -778,12 +711,21 @@ function Game() {
 		}
 	}
 
+	 //Choose level
+	 this.chooseLevel = function () {
+		 document.getElementById('game-start').style.display = "none";
+		document.getElementById('level-chooser').style.display = "block";
+	 }
 	// Start the animation loop
-	this.start = function() {
+	this.start = function(lives,level) {
 		document.getElementById('game-start').style.display = "none";
 		document.getElementById('score_board').style.display = "block";
 		document.getElementById('level_board').style.display = "block";
-		this.ship.draw();
+		document.getElementById('lives_board').style.display = "block";
+		document.getElementById('level-chooser').style.display = "none";
+		this.lives = lives;
+		this.level = level;
+		this.Hero.draw();
 		this.backgroundAudio.play();
 		animate();
 	};
@@ -794,21 +736,26 @@ function Game() {
 
 		document.getElementById('game-over').style.display = "none";
 		this.bgContext.clearRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
-		this.shipContext.clearRect(0, 0, this.shipCanvas.width, this.shipCanvas.height);
+		this.HeroContext.clearRect(0, 0, this.HeroCanvas.width, this.HeroCanvas.height);
 		this.mainContext.clearRect(0, 0, this.mainCanvas.width, this.mainCanvas.height);
 
 		this.quadTree.clear();
 
 		this.background.init(0,0);
-		this.ship.init(this.shipStartX, this.shipStartY,
-		               imageRepository.spaceship.width, imageRepository.spaceship.height);
+		this.Hero.init(this.HeroStartX, this.HeroStartY,
+		               imageRepository.hero.width, imageRepository.hero.height);
 
 		this.enemyPool.init("enemy");
 		this.spawnWave();
 		this.enemyBulletPool.init("enemyBullet");
 
 		this.playerScore = 0;
-
+		if (this.level=="Easy")
+			this.lives = 10;
+		else if (this.level=="Medium")
+			this.lives = 5;
+		else if (this.level=="Hard")
+			this.lives = 1;
 		this.backgroundAudio.currentTime = 0;
 		this.backgroundAudio.play();
 
@@ -882,18 +829,16 @@ function SoundPool(maxSize) {
 
 
 /**
- * The animation loop. Calls the requestAnimationFrame shim to
- * optimize the game loop and draws all game objects. This
- * function must be a gobal function and cannot be within an
- * object.
+  The animation loop.
  */
 function animate() {
 	document.getElementById('score').innerHTML = game.playerScore;
-
+	document.getElementById('level').innerHTML = game.level;
+	document.getElementById('lives').innerHTML = game.lives;
 	// Insert objects into quadtree
 	game.quadTree.clear();
-	game.quadTree.insert(game.ship);
-	game.quadTree.insert(game.ship.bulletPool.getPool());
+	game.quadTree.insert(game.Hero);
+	game.quadTree.insert(game.Hero.bulletPool.getPool());
 	game.quadTree.insert(game.enemyPool.getPool());
 	game.quadTree.insert(game.enemyBulletPool.getPool());
 
@@ -905,12 +850,12 @@ function animate() {
 	}
 
 	// Animate game objects
-	if (game.ship.alive) {
+	if (game.Hero.alive) {
 		requestAnimFrame( animate );
 
 		game.background.draw();
-		game.ship.move();
-		game.ship.bulletPool.animate();
+		game.Hero.move();
+		game.Hero.bulletPool.animate();
 		game.enemyPool.animate();
 		game.enemyBulletPool.animate();
 	}
@@ -925,7 +870,7 @@ function detectCollision() {
 
 		for (y = 0, length = obj.length; y < length; y++) {
 
-			// DETECT COLLISION ALGORITHM
+			// detect all collisions
 			if (objects[x].collidableWith === obj[y].type &&
 				(objects[x].x < obj[y].x + obj[y].width &&
 			     objects[x].x + objects[x].width > obj[y].x &&
@@ -942,8 +887,7 @@ function getARandomLetter(){
 	allLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	return allLetters.charAt(Math.floor(Math.random() * allLetters.length));
 }
-// The keycodes that will be mapped when a user presses a button.
-// Original code by Doug McInnes
+
 KEY_CODES = {
   32: 'space',
   37: 'left',
@@ -952,35 +896,21 @@ KEY_CODES = {
   40: 'down',
 }
 
-// Creates the array to hold the KEY_CODES and sets all their values
-// to true. Checking true/flase is the quickest way to check status
-// of a key press and which one was pressed when determining
-// when to move and which direction.
+
 KEY_STATUS = {};
 for (code in KEY_CODES) {
   KEY_STATUS[KEY_CODES[code]] = false;
 }
-/**
- * Sets up the document to listen to onkeydown events (fired when
- * any key on the keyboard is pressed down). When a key is pressed,
- * it sets the appropriate direction to true to let us know which
- * key it was.
- */
+
 document.onkeydown = function(e) {
-	// Firefox and opera use charCode instead of keyCode to
-	// return which key was pressed.
+
 	var keyCode = (e.keyCode) ? e.keyCode : e.charCode;
   if (KEY_CODES[keyCode]) {
 		e.preventDefault();
     KEY_STATUS[KEY_CODES[keyCode]] = true;
   }
 }
-/**
- * Sets up the document to listen to ownkeyup events (fired when
- * any key on the keyboard is released). When a key is released,
- * it sets teh appropriate direction to false to let us know which
- * key it was.
- */
+
 document.onkeyup = function(e) {
   var keyCode = (e.keyCode) ? e.keyCode : e.charCode;
   if (KEY_CODES[keyCode]) {
@@ -990,11 +920,7 @@ document.onkeyup = function(e) {
 }
 
 
-/**
- * requestAnim shim layer by Paul Irish
- * Finds the first API that works to optimize the animation loop,
- * otherwise defaults to setTimeout().
- */
+
 window.requestAnimFrame = (function(){
 	return  window.requestAnimationFrame       ||
 			window.webkitRequestAnimationFrame ||

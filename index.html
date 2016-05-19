@@ -5,20 +5,26 @@
 		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
-		<!-- The canvas for the panning background -->
+		<!-- The canvas to draw the background -->
 		<canvas id="background" width="600" height="360">
 			Your browser does not support canvas. Please try again with a different browser.
 		</canvas>
-		<!-- The canvas for all enemy ships and bullets -->
+		<!-- The canvas for all enemy heroes and bullets -->
 		<canvas id="main" width="600" height="360">
 		</canvas>
-		<!-- The canvas the ship uses (can only move up
+		<!-- The canvas the hero uses (can only move up
          one forth the screen. -->
-		<canvas id="ship" width="600" height="360">
+		<canvas id="Hero" width="600" height="360">
 		</canvas>
-		<div class="level" id="level_board">LEVEL: <span id="level">1</span></div>
+		<div class="level" id="level_board">LEVEL: <span id="level">Easy</span></div>
 		<div class="score" id="score_board">SCORE: <span id="score"></span></div>
-		<div class="game-start" id="game-start">WORD SHOOTING GAME<p><button onclick="game.start()">Start</button></p></div>
+		<div class="lives" id="lives_board">LIVES: <span id="lives"></span></div>
+		<div class="game-start" id="game-start">WORD SHOOTING GAME<p><button onclick="game.chooseLevel()">Start</button></p></div>
+		<div class="level-chooser" id="level-chooser">
+			<div><button id="easy" onclick="game.start(10,'Easy')">Easy</button></div>
+			<div><button id="medium" onclick="game.start(5,'Medium')">Medium</button></div>
+			<div><button id="hard" onclick="game.start(1,'Hard')">Hard</button></div>
+		</div>
 		<div class="game-over" id="game-over">GAME OVER<p><button onclick="game.restart()">Restart</button></p></div>
 		<div class="loading" id="loading">LOADING...<p>Please wait</p></div>
 		<script src="word_shooting.js"></script>

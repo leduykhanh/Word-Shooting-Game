@@ -86,3 +86,26 @@
 				font-size: 30px;
 				cursor: default;
 			}
+			.level-chooser{
+				display: none;
+				position: absolute;
+				top: 100px;
+				left: 210px;
+			}
+			.level-chooser  button{
+				width: 100px;
+				height: 50px;
+				border-radius: 20px;
+				font-family: Helvetica, sans-serif;
+				font-size: 20px;
+				margin: 7px;
+			}
+			#lives_board  {
+				position: absolute;
+				top: 5px;
+				left: 250px;
+				color: #FFF;
+				font-family: Helvetica, sans-serif;
+				cursor: default;
+                display: none;
+			}
